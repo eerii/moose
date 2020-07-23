@@ -1,0 +1,28 @@
+{
+  "name": "moose",
+  "version": "0.1.0",
+  "description": "MOOSE Time Banking",
+  "main": "handler.js",
+  "scripts": {
+    "test": "serverless-bundle test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/josekoalas/moose.git"
+  },
+  "author": "José Pazos Pérez",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/josekoalas/moose/issues"
+  },
+  "homepage": "https://github.com/josekoalas/moose#readme",
+  "devDependencies": {
+    "serverless-bundle": "^2.0.0",
+    "serverless-domain-manager": "^4.2.0",
+    "serverless-offline": "^6.5.0"
+  },
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "mongoose": "^5.9.25"
+  }
+}

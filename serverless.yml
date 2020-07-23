@@ -1,0 +1,22 @@
+service: moose
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  memorySize: 128
+  timeout: 10
+  stage: dev
+  region: us-east-1
+
+functions:
+
+plugins:
+  - serverless-offline
+  - serverless-bundle
+#  - serverless-domain-manager
+
+#custom:
+#  customDomain:
+#    domainName: api.moosehour.com
+#    basePath: "/"
+#    createRoute53Record: false
