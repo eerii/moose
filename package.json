@@ -17,8 +17,6 @@
   },
   "homepage": "https://github.com/josekoalas/moose#readme",
   "devDependencies": {
-    "serverless-bundle": "^2.0.0",
-    "serverless-domain-manager": "^4.2.0",
     "serverless-offline": "^6.5.0"
   },
   "dependencies": {
