@@ -25,6 +25,8 @@ module.exports.verifyMail = () => {
 
 
 module.exports.sendMail = async event => {
+    const req = JSON.parse(event.body)
+
     const html = `
 	<h1>Test</h1>
 	<p>This is a test</p>
@@ -32,25 +34,31 @@ module.exports.sendMail = async event => {
 
     const mailOptions = {
         from: '"MOOSE" <moosehour@gmail.com>',
-        to: "test@mail.com",
+        to: req.mail,
         subject: "Test",
         html
     }
 
+    const ownMailOptions = {
+        from: '"MOOSE" <moosehour@gmail.com>',
+        to: "moosehour@gmail.com",
+        subject: "New registration",
+        text: req.mail
+    }
+
+    const headers = {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Credentials": true
+    }
+
     try {
         let info = await transporter.sendMail(mailOptions)
+        let info2 = await transporter.sendMail(ownMailOptions)
 
         return {
             statusCode: 200,
             headers: headers,
-            body: JSON.stringify(
-                {
-                    success: true,
-                    message: "Thank you!"
-                },
-                null,
-                2,
-            ),
+            body: JSON.stringify(info, null, 2),
         }
     }
     catch {

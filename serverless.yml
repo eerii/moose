@@ -5,7 +5,7 @@ provider:
   runtime: nodejs12.x
   memorySize: 128
   timeout: 10
-  stage: prod
+  stage: dev
   region: us-east-1
   environment:
     MAIL_HOST: ${file(env.yml):${self:provider.stage}.MAIL_HOST}
@@ -30,9 +30,9 @@ plugins:
 #  - serverless-bundle
 #  - serverless-domain-manager
 
-resources:
+#resources:
   # API Gateway Errors
-  - ${file(resources/api-gateway-errors.yml)}
+  # - ${file(resources/api-gateway-errors.yml)}
 
 #custom:
 #  customDomain:
