@@ -1,23 +1,14 @@
-const mongoose = require('mongoose')
-const BetaUser = require('./models/BetaUser')
+const { Pool, Client } = require('pg');
 
-mongoose.Promise = global.Promise
-let isConnected
+const pool = new Pool({
+    database: process.env.DB_NAME,
+    host: process.env.DB,
+    port: process.env.DB_PORT,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASS,
+})
 
-const connect = () => {
-    if (isConnected) {
-        console.log('=> using existing database connection')
-        return Promise.resolve()
-    }
-
-    console.log('=> using new database connection')
-    return mongoose.connect(process.env.DB)
-        .then(db => {
-            isConnected = db.connections[0].readyState
-        })
-}
-
-module.exports.add = (event, context, callback) => {
+module.exports.add = async (event, context) => {
     context.callbackWaitsForEmptyEventLoop = false
 
     const headers = {
@@ -25,18 +16,36 @@ module.exports.add = (event, context, callback) => {
         'Access-Control-Allow-Credentials': true,
     }
 
-    connect()
-        .then(() => {
-            BetaUser.create(JSON.parse(event.body))
-                .then(user => callback(null, {
-                    statusCode: 200,
-                    headers,
-                    body: JSON.stringify(user)
-                }))
-                .catch(err => callback(null, {
-                    statusCode: err.statusCode || 500,
-                    headers,
-                    body: 'Could not create the user entry.'
-                }))
-        })
+    try {
+        await pool.connect()
+        console.log("Connected Successfully")
+
+        try {
+            mail = JSON.parse(event.body).mail
+
+            const client = await pool.connect()
+            await client.query('INSERT INTO betausers(mail) VALUES($1)', [mail])
+            client.release()
+
+            return {
+                statusCode: 200,
+                headers,
+                body: "User added!"
+            }
+        } catch (e) {
+            console.log("Failed to Add User " + e)
+            return {
+                statusCode: e.statusCode || 500,
+                headers,
+                body: "Could not add user " + e
+            }
+        }
+    } catch (e) {
+        console.log("Failed to Connect Successfully " + e)
+        return {
+            statusCode: e.statusCode || 500,
+            headers,
+            body: "Could not add user " + e
+        }
+    }
 }

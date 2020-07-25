@@ -9,6 +9,10 @@ provider:
   region: us-east-1
   environment:
     DB: ${file(env.yml):${self:provider.stage}.DB}
+    DB_USER: ${file(env.yml):${self:provider.stage}.DB_USER}
+    DB_PASS: ${file(env.yml):${self:provider.stage}.DB_PASS}
+    DB_PORT: ${file(env.yml):${self:provider.stage}.DB_PORT}
+    DB_NAME: ${file(env.yml):${self:provider.stage}.DB_NAME}
     MAIL: ${file(env.yml):${self:provider.stage}.MAIL}
 
 functions:
