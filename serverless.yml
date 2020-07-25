@@ -30,6 +30,7 @@ functions:
             headers:
               - Authorization
               - Access-Control-Allow-Origin
+              - Content-Type
 
 plugins:
   - serverless-offline
