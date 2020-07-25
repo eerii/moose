@@ -8,12 +8,8 @@ provider:
   stage: dev
   region: us-east-1
   environment:
-    MAIL_HOST: ${file(env.yml):${self:provider.stage}.MAIL_HOST}
-    MAIL_PORT: ${file(env.yml):${self:provider.stage}.MAIL_PORT}
-    MAIL_USER: ${file(env.yml):${self:provider.stage}.MAIL_USER}
-    MAIL_PASS: ${file(env.yml):${self:provider.stage}.MAIL_PASS}
-    MAIL_SERVICE: ${file(env.yml):${self:provider.stage}.MAIL_SERVICE}
     DB: ${file(env.yml):${self:provider.stage}.DB}
+    MAIL: ${file(env.yml):${self:provider.stage}.MAIL}
 
 functions:
   sendMail:
@@ -23,8 +19,6 @@ functions:
           path: api/signup
           method: post
           cors: true
-  verifyMail:
-    handler: mail.verifyMail
   addToDatabase:
     handler: db.add
     events:
