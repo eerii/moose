@@ -16,7 +16,7 @@ module.exports.sendMail = async event => {
 
     const headers = {
         "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Credentials": true
+        'Access-Control-Allow-Headers': "Access-Control-Allow-Origin",
     }
 
     try {
