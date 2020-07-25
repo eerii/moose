@@ -1,9 +1,9 @@
 const mail = require('@sendgrid/mail')
-const {MAIL} = process.env
 
 module.exports.sendMail = async event => {
     const req = JSON.parse(event.body)
 
+    const {MAIL} = process.env
     await mail.setApiKey(MAIL)
 
     const msg = {
