@@ -13,6 +13,7 @@ provider:
     MAIL_USER: ${file(env.yml):${self:provider.stage}.MAIL_USER}
     MAIL_PASS: ${file(env.yml):${self:provider.stage}.MAIL_PASS}
     MAIL_SERVICE: ${file(env.yml):${self:provider.stage}.MAIL_SERVICE}
+    DB: ${file(env.yml):${self:provider.stage}.DB}
 
 functions:
   sendMail:
@@ -24,6 +25,13 @@ functions:
           cors: true
   verifyMail:
     handler: mail.verifyMail
+  addToDatabase:
+    handler: db.add
+    events:
+      - http:
+          path: api/betausers
+          method: post
+          cors: true
 
 plugins:
   - serverless-offline
