@@ -25,12 +25,7 @@ functions:
       - http:
           path: api/betausers
           method: post
-          cors:
-            origin: '*'
-            headers:
-              - Authorization
-              - Access-Control-Allow-Origin
-              - Content-Type
+          cors: true
 
 plugins:
   - serverless-offline
