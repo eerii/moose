@@ -24,7 +24,7 @@ module.exports.add = async (event, context) => {
             mail = JSON.parse(event.body).mail
 
             const client = await pool.connect()
-            await client.query('INSERT INTO betausers(mail) VALUES($1) ON CONFLICT DO NOTHING', [mail])
+            await client.query('INSERT INTO betausers(mail) VALUES($1)', [mail])
             await client.release()
 
             return {
@@ -34,10 +34,19 @@ module.exports.add = async (event, context) => {
             }
         } catch (e) {
             console.log("Failed to Add User " + e)
-            return {
-                statusCode: e.statusCode || 500,
-                headers,
-                body: "Could not add user " + e
+
+            if (e.message.startsWith("duplicate")) {
+                return {
+                    statusCode: 409,
+                    headers,
+                    body: "The user already exists"
+                }
+            } else {
+                return {
+                    statusCode: e.statusCode || 500,
+                    headers,
+                    body: "Could not add user " + e
+                }
             }
         }
     } catch (e) {
