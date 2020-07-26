@@ -1,17 +1,20 @@
-const mail = require('@sendgrid/mail')
+const mailgun = require('mailgun-js')
+const mail = mailgun({apiKey: process.env.MAIL, domain: 'moose.exchange'});
 
 module.exports.sendMail = async event => {
     const req = JSON.parse(event.body)
 
-    const {MAIL} = process.env
-    await mail.setApiKey(MAIL)
-
     const msg = {
         to: req.mail,
-        from: 'hello@moose.exchange',
+        from: 'MOOSE <hello@moose.exchange>',
         subject: 'Welcome to MOOSE!',
         text: 'Thank you for signing up!',
-        html: '<h1>MOOSE<h1/><h2>Thank you for signing up<h2/>',
+        html: '<div> ' +
+                '<h2 style="color: #4960F9">MOOSE</h2>' +
+                '<h3>Thank you for signing up!</h3>' +
+                '<p>Our beta program will launch soon, and you will be the first one to know.</p>' +
+                '<p>Discover more about MOOSE in our <a href="https://moosehour.com">website</a></p>' +
+              '</div>',
     }
 
     const headers = {
@@ -20,7 +23,7 @@ module.exports.sendMail = async event => {
     }
 
     try {
-        let info = await mail.send(msg)
+        let info = await mail.messages().send(msg)
 
         return {
             statusCode: 200,

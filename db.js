@@ -24,8 +24,8 @@ module.exports.add = async (event, context) => {
             mail = JSON.parse(event.body).mail
 
             const client = await pool.connect()
-            await client.query('INSERT INTO betausers(mail) VALUES($1)', [mail])
-            client.release()
+            await client.query('INSERT INTO betausers(mail) VALUES($1) ON CONFLICT DO NOTHING', [mail])
+            await client.release()
 
             return {
                 statusCode: 200,
