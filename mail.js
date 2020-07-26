@@ -12,8 +12,8 @@ module.exports.sendMail = async event => {
         html: '<div> ' +
                 '<h2 style="color: #4960F9">MOOSE</h2>' +
                 '<h3>Thank you for signing up!</h3>' +
-                '<p>Our beta program will launch soon, and you will be the first one to know.</p>' +
-                '<p>Discover more about MOOSE in our <a href="https://moosehour.com">website</a></p>' +
+                '<p>Our beta program is launching soon, and you will be the first one to know.</p>' +
+                '<p>Discover more about MOOSE at our <a href="https://moosehour.com">website</a></p>' +
               '</div>',
     }
 
