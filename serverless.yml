@@ -14,8 +14,11 @@ provider:
     DB_PORT: ${file(env.yml):${self:provider.stage}.DB_PORT}
     DB_NAME: ${file(env.yml):${self:provider.stage}.DB_NAME}
     MAIL: ${file(env.yml):${self:provider.stage}.MAIL}
+    SECRET: ${file(env.yml):${self:provider.stage}.SECRET}
 
 functions:
+  auth:
+    handler: auth/verifyToken.auth
   signup:
     handler: signup/handler.signup
     events:
@@ -23,15 +26,18 @@ functions:
           path: api/signup
           method: post
           cors: true
+  register:
+    handler: auth/handler.register
+    events:
+      - http:
+          path: api/register
+          method: post
+          cors: true
 
 plugins:
   - serverless-offline
 #  - serverless-bundle
 #  - serverless-domain-manager
-
-#resources:
-  # API Gateway Errors
-  # - ${file(resources/api-gateway-errors.yml)}
 
 #custom:
 #  customDomain:

@@ -1,5 +1,5 @@
 const {mail, msg} = require("./mail")
-const {pool} = require("./db")
+const {connect} = require("../database/db")
 
 const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -10,14 +10,12 @@ module.exports.signup = async (event, context) => {
     context.callbackWaitsForEmptyEventLoop = false
 
     try {
-        await pool.connect()
-        console.log("Connected Successfully")
+        const client = await connect()
 
         try {
             const req = JSON.parse(event.body)
 
-            const client = await pool.connect()
-            await client.query('INSERT INTO signup(mail) VALUES($1)', [req.mail])
+            await client.query(`INSERT INTO signup(mail) VALUES($1)`, [req.mail])
             await client.release()
 
             const newMsg = { to: req.mail, ...msg }
