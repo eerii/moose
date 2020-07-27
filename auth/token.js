@@ -1,6 +1,14 @@
 const jwt = require('jsonwebtoken')
 
-// Policy helper function
+const signToken = (username) => {
+    return jwt.sign(
+        { username },
+        process.env.SECRET, {
+            expiresIn: 86400 //24h
+        }
+    )
+}
+
 const generatePolicy = (principalId, effect, resource) => {
     const authResponse = {}
 
@@ -25,7 +33,7 @@ const generatePolicy = (principalId, effect, resource) => {
     return authResponse
 }
 
-module.exports.auth = (event, context, callback) => {
+const auth = (event, context, callback) => {
 
     //Check header, url or post for Token
     const token = event.authorizationToken
@@ -40,6 +48,7 @@ module.exports.auth = (event, context, callback) => {
 
         //If good, save request
         return callback(null, generatePolicy(decoded.id, 'Allow', event.methodArn))
-    });
+    })
+}
 
-};
+module.exports = { signToken, auth }

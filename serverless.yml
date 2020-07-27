@@ -18,7 +18,7 @@ provider:
 
 functions:
   auth:
-    handler: auth/verifyToken.auth
+    handler: auth/token.auth
   signup:
     handler: signup/handler.signup
     events:
@@ -31,6 +31,13 @@ functions:
     events:
       - http:
           path: api/register
+          method: post
+          cors: true
+  login:
+    handler: auth/handler.login
+    events:
+      - http:
+          path: api/login
           method: post
           cors: true
 
