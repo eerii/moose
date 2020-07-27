@@ -6,7 +6,7 @@ provider:
   memorySize: 128
   timeout: 10
   stage: dev
-  region: us-east-1
+  region: eu-central-1
   environment:
     DB: ${file(env.yml):${self:provider.stage}.DB}
     DB_USER: ${file(env.yml):${self:provider.stage}.DB_USER}
@@ -16,18 +16,11 @@ provider:
     MAIL: ${file(env.yml):${self:provider.stage}.MAIL}
 
 functions:
-  sendMail:
-    handler: mail.sendMail
+  signup:
+    handler: signup/handler.signup
     events:
       - http:
           path: api/signup
-          method: post
-          cors: true
-  addToDatabase:
-    handler: db.add
-    events:
-      - http:
-          path: api/betausers
           method: post
           cors: true
 

@@ -1,31 +1,28 @@
-const { Pool, Client } = require('pg');
+const {mail, msg} = require("./mail")
+const {pool} = require("./db")
 
-const pool = new Pool({
-    database: process.env.DB_NAME,
-    host: process.env.DB,
-    port: process.env.DB_PORT,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASS,
-})
+const headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Credentials': true,
+}
 
-module.exports.add = async (event, context) => {
+module.exports.signup = async (event, context) => {
     context.callbackWaitsForEmptyEventLoop = false
-
-    const headers = {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Credentials': true,
-    }
 
     try {
         await pool.connect()
         console.log("Connected Successfully")
 
         try {
-            mail = JSON.parse(event.body).mail
+            const req = JSON.parse(event.body)
 
             const client = await pool.connect()
-            await client.query('INSERT INTO betausers(mail) VALUES($1)', [mail])
+            await client.query('INSERT INTO signup(mail) VALUES($1)', [req.mail])
             await client.release()
+
+            const newMsg = { to: req.mail, ...msg }
+
+            await mail.messages().send(newMsg)
 
             return {
                 statusCode: 200,
@@ -51,10 +48,11 @@ module.exports.add = async (event, context) => {
         }
     } catch (e) {
         console.log("Failed to Connect Successfully " + e)
+
         return {
             statusCode: e.statusCode || 500,
             headers,
-            body: "Could not add user " + e
+            body: "Could not connect to database " + e
         }
     }
 }
