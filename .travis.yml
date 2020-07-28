@@ -8,15 +8,15 @@ cache:
 
 jobs:
   include:
-    - stage: init
-      script: npm install -g serverless
     - stage: devDeploy
-      script: sls deploy --stage dev
+    - script: npm install -g serverless
+    - script: sls deploy --stage dev
+
     - stage: prodDeploy
-      script: sls deploy --stage prod
+    - script: npm install -g serverless
+    - script: sls deploy --stage prod
 
 stages:
-  - init
   - name: devDeploy
     if: branch = dev
   - name: prodDeploy
