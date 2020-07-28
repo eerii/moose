@@ -2,28 +2,21 @@ language: node_js
 node_js:
   - node
 
-deploy_service_job: &AWS
-  cache:
-    directories:
-      - node_modules
+cache:
+  directories:
+    - node_modules
 
-  install:
-    - npm install serverless -g
-    - travis_retry npm install
-
-  script:
-    - serverless deploy -s ${STAGE}
+install:
+  - npm install serverless -g
+  - travis_retry npm install
 
 jobs:
   include:
-    # non-master branches deploys to stage named by the branch
-    - <<: *AWS
+    - stage: dev
       name: "Deploy DEV"
       if: branch = dev
-      env:
-        - STAGE="dev"
-    - <<: *AWS
-        name: "Deploy PROD"
-        if: branch = prod
-        env:
-          - STAGE="prod"
+      script: serverless deploy -s dev
+    - stage: prod
+      name: "Deploy PROD"
+      if: branch = master
+      script: serverless deploy -s prod
