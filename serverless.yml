@@ -33,6 +33,7 @@ functions:
           path: api/register
           method: post
           cors: true
+          authorizer: auth #TODO: Remove in prod, but prevent registration from happening
   login:
     handler: auth/handler.login
     events:
@@ -40,6 +41,14 @@ functions:
           path: api/login
           method: post
           cors: true
+  me:
+    handler: auth/handler.me
+    events:
+      - http:
+          path: api/me
+          method: get
+          cors: true
+          authorizer: auth
 
 plugins:
   - serverless-offline

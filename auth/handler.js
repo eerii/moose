@@ -50,3 +50,51 @@ module.exports.login = async (event, context) => {
         }
     }
 }
+
+module.exports.me = async (event, context) => {
+    context.callbackWaitsForEmptyEventLoop = false
+
+    try {
+        const client = await connect()
+
+        const session = await me(event.requestContext.authorizer.principalId, client)
+
+        return {
+            statusCode: session.statusCode || 200,
+            headers,
+            body: JSON.stringify(session)
+        }
+    } catch (e) {
+        return {
+            status: e.statusCode || 500,
+            headers: { 'Content-Type': 'text/plain', ...headers },
+            body: e.message
+        }
+    }
+}
+
+const me = async (userID, client) => {
+    try {
+        const exists = await client.query(`SELECT EXISTS(SELECT 1 FROM users WHERE username = $1)`, [userID])
+        client.release()
+
+        if (exists) {
+            return {
+                exists: true,
+                username: userID
+            }
+        } else {
+            return {
+                statusCode: 400,
+                exists: false,
+                error: "No user found."
+            }
+        }
+    } catch (e) {
+        return {
+            statusCode: 500,
+            exists: false,
+            error: e.message
+        }
+    }
+}

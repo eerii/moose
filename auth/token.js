@@ -9,18 +9,18 @@ const signToken = (username) => {
     )
 }
 
-const generatePolicy = (principalId, effect, resource) => {
-    const authResponse = {}
+const generatePolicy = async (principalId, effect, resource) => {
+    let authResponse = {}
 
     authResponse.principalId = principalId
 
     if (effect && resource)
     {
-        const policyDocument = {}
+        let policyDocument = {}
         policyDocument.Version = '2012-10-17'
         policyDocument.Statement = []
 
-        const statementOne = {}
+        let statementOne = {}
         statementOne.Action = 'execute-api:Invoke'
         statementOne.Effect = effect
         statementOne.Resource = resource
@@ -33,22 +33,55 @@ const generatePolicy = (principalId, effect, resource) => {
     return authResponse
 }
 
-const auth = (event, context, callback) => {
+const auth = async (event, context) => {
 
-    //Check header, url or post for Token
-    const token = event.authorizationToken
+    const header = event.authorizationToken.split(" ")
+    if (header.length !== 2)
+        return {
+            statusCode: 400,
+            body: {
+                auth: false,
+                error: "The authorization header is not valid. Make sure you are using a header."
+            }
+        }
 
+    const scheme = header[0]
+    const token = header[1]
+    if (!scheme || scheme !== "Bearer")
+        return {
+            statusCode: 401,
+            body: {
+                auth: false,
+                error: "Unauthorized: There is no valid scheme. Make sure you are using Bearer."
+            }
+        }
     if (!token)
-        return callback(null, 'Unauthorized')
+        return {
+            statusCode: 401,
+            body: {
+                auth: false,
+                error: "Unauthorized: There is no token."
+            }
+        }
 
-    //Verify Secret
-    jwt.verify(token, process.env.SECRET, (err, decoded) => {
-        if (err)
-            return callback(null, 'Unauthorized')
+    try {
+        const decoded = await jwt.verify(token, process.env.SECRET)
 
-        //If good, save request
-        return callback(null, generatePolicy(decoded.id, 'Allow', event.methodArn))
-    })
+        const policy = await generatePolicy(decoded.username, 'Allow', event.methodArn)
+
+        return {
+            statusCode: 200,
+            ...policy
+        }
+    } catch (e) {
+        return {
+            statusCode: 401,
+            body: {
+                auth: false,
+                error: "Unauthorized: " + e.message
+            }
+        }
+    }
 }
 
 module.exports = { signToken, auth }
