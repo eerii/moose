@@ -1,9 +1,23 @@
 language: node_js
 node_js:
   - node
+
 cache:
   directories:
     - node_modules
-script:
-  - npm install -g serverless
-  - sls deploy
+
+jobs:
+  include:
+    - stage: init
+      script: npm install -g serverless
+    - stage: devDeploy
+      script: sls deploy --stage dev
+    - stage: prodDeploy
+      script: sls deploy --stage prod
+
+stages:
+  - init
+  - name: devDeploy
+    if: branch = dev
+  - name: prodDeploy
+    if: branch = master
