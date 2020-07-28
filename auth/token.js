@@ -69,10 +69,7 @@ const auth = async (event, context) => {
 
         const policy = await generatePolicy(decoded.username, 'Allow', event.methodArn)
 
-        return {
-            statusCode: 200,
-            ...policy
-        }
+        return policy
     } catch (e) {
         return {
             statusCode: 401,
