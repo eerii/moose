@@ -12,7 +12,7 @@ module.exports.disconnect = async (event, context) => {
 
     try {
         const client = await connect()
-        await client.query(`DELETE FROM connections WHERE connectionID = $1`, [connectionID])
+        await client.query(`DELETE FROM connections WHERE "connectionID" = $1`, [connectionID])
         client.release()
     } catch (e) {
         console.log(e)
