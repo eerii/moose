@@ -9,6 +9,7 @@ provider:
   region: eu-central-1
   environment:
     DB: ${file(env.yml):${self:provider.stage}.DB}
+    DB_PORT: ${file(env.yml):${self:provider.stage}.DB_PORT}
     DB_USER: ${file(env.yml):${self:provider.stage}.DB_USER}
     DB_PASS: ${file(env.yml):${self:provider.stage}.DB_PASS}
     DB_NAME: ${file(env.yml):${self:provider.stage}.DB_NAME}
@@ -16,8 +17,10 @@ provider:
     SECRET: ${file(env.yml):${self:provider.stage}.SECRET}
 
 functions:
+  #AUTHORIZATION
   auth:
     handler: auth/token.auth
+  #SIGN UP FOR EMAIL
   signup:
     handler: signup/handler.signup
     events:
@@ -25,6 +28,7 @@ functions:
           path: api/signup
           method: post
           cors: true
+  #USER MANAGEMENT
   register:
     handler: auth/handler.register
     events:
@@ -48,6 +52,21 @@ functions:
           method: get
           cors: true
           authorizer: auth
+  #SIGNALING
+  signalConnect:
+    handler: signaling/connect_handler.connect
+    events:
+      - websocket:
+          route: $connect
+  signalDisconnect:
+    handler: signaling/disconnect_handler.disconnect
+    events:
+      - websocket: $disconnect
+  signalMessage:
+    handler: signaling/message_handler.sendMessage
+    events:
+      - websocket:
+          route: sendMessage
 
 plugins:
   - serverless-offline

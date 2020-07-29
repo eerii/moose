@@ -4,7 +4,7 @@ const connect = async () => {
     const config = {
         database: process.env.DB_NAME,
         host: process.env.DB,
-        port: 5432,
+        port: process.env.DB_PORT,
         user: process.env.DB_USER,
         password: process.env.DB_PASS,
         connectionTimeoutMillis: 5000,
