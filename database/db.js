@@ -4,12 +4,15 @@ const connect = async () => {
     const config = {
         database: process.env.DB_NAME,
         host: process.env.DB,
-        port: process.env.DB_PORT,
+        port: 5432,
         user: process.env.DB_USER,
         password: process.env.DB_PASS,
         connectionTimeoutMillis: 5000,
         idleTimeoutMillis: 10000,
     }
+
+    console.log(process.env.DB)
+    console.log(process.env.DB_USER)
 
     const pool = new pg.Pool(config)
 
