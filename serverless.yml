@@ -7,6 +7,9 @@ provider:
   timeout: 10
   stage: dev
   region: eu-central-1
+  #logs:
+    #websocket: true
+    #restApi: true
   environment:
     DB: ${file(env.yml):${self:provider.stage}.DB}
     DB_PORT: ${file(env.yml):${self:provider.stage}.DB_PORT}
@@ -20,6 +23,8 @@ functions:
   #AUTHORIZATION
   auth:
     handler: auth/token.auth
+  reqAuth:
+    handler: auth/websocket.auth
   #SIGN UP FOR EMAIL
   signup:
     handler: signup/handler.signup
@@ -58,6 +63,11 @@ functions:
     events:
       - websocket:
           route: $connect
+          authorizer:
+            name: reqAuth
+            type: request
+            identitySource:
+              - 'route.request.querystring.Auth'
   signalDisconnect:
     handler: signaling/disconnect_handler.disconnect
     events:

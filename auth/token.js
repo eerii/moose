@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken')
+const { generatePolicy } = require("./policy")
 
 const signToken = (username) => {
     return jwt.sign(
@@ -9,31 +10,16 @@ const signToken = (username) => {
     )
 }
 
-const generatePolicy = async (principalId, effect, resource) => {
-    let authResponse = {}
-
-    authResponse.principalId = principalId
-
-    if (effect && resource)
-    {
-        let policyDocument = {}
-        policyDocument.Version = '2012-10-17'
-        policyDocument.Statement = []
-
-        let statementOne = {}
-        statementOne.Action = 'execute-api:Invoke'
-        statementOne.Effect = effect
-        statementOne.Resource = resource
-
-        policyDocument.Statement[0] = statementOne
-
-        authResponse.policyDocument = policyDocument
-    }
-
-    return authResponse
+const signMiniToken = (username) => {
+    return jwt.sign(
+        { username },
+        process.env.SECRET, {
+            expiresIn: 60 //1min
+        }
+    )
 }
 
-const auth = async (event, context) => {
+const auth = async (event) => {
 
     const header = event.authorizationToken.split(" ")
     if (header.length !== 2)
@@ -81,4 +67,4 @@ const auth = async (event, context) => {
     }
 }
 
-module.exports = { signToken, auth }
+module.exports = { signToken, signMiniToken, auth }
