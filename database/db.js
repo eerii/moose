@@ -11,13 +11,10 @@ const connect = async () => {
         idleTimeoutMillis: 10000,
     }
 
-    console.log(process.env.DB)
-    console.log(process.env.DB_USER)
-
     const pool = new pg.Pool(config)
 
     const client = await pool.connect()
-    console.log("Connected Successfully")
+    console.log("Connected to database Successfully")
 
     return client
 }

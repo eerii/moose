@@ -37,7 +37,7 @@ module.exports.sendMessage = async (event, context) => {
             if (e.statusCode === 410) {
                 console.log(`Found stale connection, deleting ${connectionID}`)
                 const client = await connect()
-                client.query(`DELETE FROM connections WHERE connectionID = $1`, [connectionID])
+                await client.query(`DELETE FROM connections WHERE "connectionID" = $1`, [connectionID])
                 client.release()
             } else {
                 console.log(e)
@@ -52,6 +52,6 @@ module.exports.sendMessage = async (event, context) => {
         return { statusCode: 500, body: e.stack }
     }
 
-    console.log("Successful")
+    console.log("Successfully sent message.")
     return { statusCode: 200, body: 'Data sent.' }
 }

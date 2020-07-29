@@ -12,21 +12,11 @@ module.exports.disconnect = async (event, context) => {
 
     try {
         const client = await connect()
-
         await client.query(`DELETE FROM connections WHERE connectionID = $1`, [connectionID])
-
         client.release()
-
-        return {
-            statusCode: 200,
-            headers: { 'Content-Type': 'text/plain', ...headers },
-            body: "Disconnected."
-        }
     } catch (e) {
-        return {
-            status: e.statusCode || 500,
-            headers: { 'Content-Type': 'text/plain', ...headers },
-            body: "Failed to disconnect: " + e.message
-        }
+        console.log(e)
+        return {statusCode: 500, body: 'Failed to disconnect: ' + JSON.stringify(e)}
     }
+    return { statusCode: 200, body: 'Disconnected.' }
 }
