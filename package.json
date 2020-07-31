@@ -20,6 +20,7 @@
     "serverless-offline": "^6.5.0"
   },
   "dependencies": {
+    "aws-sdk": "^2.724.0",
     "bcryptjs-then": "^1.0.1",
     "jsonwebtoken": "^8.5.1",
     "mailgun-js": "^0.22.0",

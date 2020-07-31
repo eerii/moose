@@ -1,11 +1,6 @@
 const AWS = require('aws-sdk')
 const { connect } = require('../database/db')
 
-const headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Credentials': true,
-}
-
 module.exports.sendMessage = async (event, context) => {
     context.callbackWaitsForEmptyEventLoop = false
 
@@ -26,13 +21,20 @@ module.exports.sendMessage = async (event, context) => {
         endpoint: event.requestContext.domainName + '/' + event.requestContext.stage
     })
 
-    const data = JSON.parse(event.body).data
+    const body = JSON.parse(event.body)
+
+    const res = {
+        message: body.data,
+        type: body.type || "default",
+        sender: body.sender || "nosender",
+        target: body.target || "notarget",
+    }
 
     const calls = connectionData.rows.map(async ({ connectionID }) => {
         try {
             console.log("Trying " + connectionID)
 
-            await apiGateway.postToConnection({ ConnectionId: connectionID, Data: data }).promise()
+            await apiGateway.postToConnection({ ConnectionId: connectionID, Data: JSON.stringify(res) }).promise()
         } catch (e) {
             if (e.statusCode === 410) {
                 console.log(`Found stale connection, deleting ${connectionID}`)
