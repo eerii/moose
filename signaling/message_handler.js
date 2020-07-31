@@ -4,11 +4,18 @@ const { connect } = require('../database/db')
 module.exports.sendMessage = async (event, context) => {
     context.callbackWaitsForEmptyEventLoop = false
 
+    const body = JSON.parse(event.body)
+
     let connectionData
     try {
         const client = await connect()
-        connectionData = await client.query(`SELECT "connectionID" FROM connections`)
+
+        connectionData = (body.type === "id") ?
+            await client.query(`SELECT * FROM connections`) :
+            await client.query(`SELECT "connectionID" FROM connections`)
+
         client.release()
+
         if (!connectionData) {
             return { statusCode: 400, body: "No connection data." }
         }
@@ -21,13 +28,13 @@ module.exports.sendMessage = async (event, context) => {
         endpoint: event.requestContext.domainName + '/' + event.requestContext.stage
     })
 
-    const body = JSON.parse(event.body)
-
     const res = {
         message: body.data,
         type: body.type || "default",
-        sender: body.sender || "nosender",
-        target: body.target || "notarget",
+        sender: body.sender,
+        target: body.target,
+        date: body.date,
+        userlist: (body.type === "id") ? connectionData.rows : null
     }
 
     const calls = connectionData.rows.map(async ({ connectionID }) => {
