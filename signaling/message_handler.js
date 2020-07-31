@@ -10,7 +10,7 @@ module.exports.sendMessage = async (event, context) => {
     try {
         const client = await connect()
 
-        connectionData = (body.type === "id") ?
+        connectionData = (body.type === "getID") ?
             await client.query(`SELECT * FROM connections`) :
             await client.query(`SELECT "connectionID" FROM connections`)
 
@@ -30,18 +30,24 @@ module.exports.sendMessage = async (event, context) => {
 
     const res = {
         message: body.data,
-        type: body.type || "default",
+        type: ((body.type === "getID") ? "id" : body.type) || "default",
         sender: body.sender,
         target: body.target,
         date: body.date,
-        userlist: (body.type === "id") ? connectionData.rows : null
+        userlist: (body.type === "getID") ? connectionData.rows : null
     }
 
     const calls = connectionData.rows.map(async ({ connectionID }) => {
         try {
-            console.log("Trying " + connectionID)
-
-            await apiGateway.postToConnection({ ConnectionId: connectionID, Data: JSON.stringify(res) }).promise()
+            if (body.target) {
+                if (body.target === connectionID) {
+                    console.log("Trying targeted " + connectionID)
+                    await apiGateway.postToConnection({ ConnectionId: connectionID, Data: JSON.stringify(res) }).promise()
+                }
+            } else {
+                console.log("Trying " + connectionID)
+                await apiGateway.postToConnection({ ConnectionId: connectionID, Data: JSON.stringify(res) }).promise()
+            }
         } catch (e) {
             if (e.statusCode === 410) {
                 console.log(`Found stale connection, deleting ${connectionID}`)
