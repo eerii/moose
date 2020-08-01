@@ -1,19 +1,21 @@
 const AWS = require('aws-sdk')
 const { connect } = require('../database/db')
 
-const headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Credentials': true,
-}
-
 module.exports.sendMessage = async (event, context) => {
     context.callbackWaitsForEmptyEventLoop = false
+
+    const body = JSON.parse(event.body)
 
     let connectionData
     try {
         const client = await connect()
-        connectionData = await client.query(`SELECT "connectionID" FROM connections`)
+
+        connectionData = (body.type === "getID") ?
+            await client.query(`SELECT * FROM connections`) :
+            await client.query(`SELECT "connectionID" FROM connections`)
+
         client.release()
+
         if (!connectionData) {
             return { statusCode: 400, body: "No connection data." }
         }
@@ -26,13 +28,26 @@ module.exports.sendMessage = async (event, context) => {
         endpoint: event.requestContext.domainName + '/' + event.requestContext.stage
     })
 
-    const data = JSON.parse(event.body).data
+    const res = {
+        message: body.data,
+        type: ((body.type === "getID") ? "id" : body.type) || "default",
+        sender: body.sender,
+        target: body.target,
+        date: body.date,
+        userlist: (body.type === "getID") ? connectionData.rows : null
+    }
 
     const calls = connectionData.rows.map(async ({ connectionID }) => {
         try {
-            console.log("Trying " + connectionID)
-
-            await apiGateway.postToConnection({ ConnectionId: connectionID, Data: data }).promise()
+            if (body.target) {
+                if (body.target === connectionID) {
+                    console.log("Trying targeted " + connectionID)
+                    await apiGateway.postToConnection({ ConnectionId: connectionID, Data: JSON.stringify(res) }).promise()
+                }
+            } else {
+                console.log("Trying " + connectionID)
+                await apiGateway.postToConnection({ ConnectionId: connectionID, Data: JSON.stringify(res) }).promise()
+            }
         } catch (e) {
             if (e.statusCode === 410) {
                 console.log(`Found stale connection, deleting ${connectionID}`)
