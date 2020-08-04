@@ -10,6 +10,9 @@ module.exports.sendMessage = async (event, context) => {
     try {
         const client = await connect()
 
+        if (body.type === "close")
+            await client.query(`DELETE FROM connections WHERE "connectionID" = $1`, [body.sender])
+
         connectionData = (body.type === "getID") ?
             await client.query(`SELECT * FROM connections`) :
             await client.query(`SELECT "connectionID" FROM connections`)
