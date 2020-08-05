@@ -11,7 +11,7 @@ const login = async (body, client) => {
         const {rows} = await client.query(`SELECT * FROM users WHERE username = $1`, [body.username])
         client.release()
 
-        if (rows.length != 1) {
+        if (rows.length !== 1) {
             return {
                 statusCode: 400,
                 body: {
