@@ -4,11 +4,43 @@ const { connect } = require('../database/db')
 module.exports.sendMessage = async (event, context) => {
     context.callbackWaitsForEmptyEventLoop = false
 
-    const body = JSON.parse(event.body)
+    let body = JSON.parse(event.body)
 
     let connectionData
     try {
         const client = await connect()
+
+        if (body.type === "close") {
+            await client.query(`DELETE FROM connections WHERE "connectionID" = $1`, [body.sender])
+        }
+
+
+        if (body.type === "start-time") {
+            const localTime = await Math.round(Date.now() / 1000)
+
+            await client.query(`INSERT INTO timetracking("userA", "userB", "start", "previous", "token") VALUES ($1, $2, $3, $4, $5)`, [body.sender, body.data, localTime, localTime, 0])
+
+            //The first time token is used after 10 minutes, if you want to change this, add here an update of the users and set initial value to 1
+
+            body.data = "OK: STARTED TIME TRACKING"
+        }
+
+        if (body.type === "add-time") {
+            const res = await client.query(`SELECT "previous", "token" FROM timetracking WHERE previous = (SELECT MAX(previous) FROM timetracking WHERE "userA" = $1)`, [body.sender])
+            const { previous, token } = res.rows[0]
+
+            const localTime = await Math.round(Date.now() / 1000)
+
+            const difference = (localTime - 600) - previous //10 Minutes
+
+            if (Math.abs(difference) < 120) { //2 Minutes margin
+                await client.query(`UPDATE timetracking SET "previous" = $1, "token" = $2 WHERE previous = (SELECT MAX(previous) FROM timetracking WHERE "userA" = $3)`, [localTime, token + 1, body.sender])
+                await client.query(`UPDATE users SET "tokens" = "tokens" - 1 WHERE "username" = $1`, [body.sender])
+                body.data = `OK: ADDED TIME WITH DIFERENCE ${difference}s AND USED ${token + 1} TIME TOKENS`
+            } else {
+                body.data = "ERROR: DIFFERENCE IN TIMES " + difference + "s" + ` LocalTime ${localTime} PreviousTime ${previous}`
+            }
+        }
 
         connectionData = (body.type === "getID") ?
             await client.query(`SELECT * FROM connections`) :
