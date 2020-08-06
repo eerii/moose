@@ -25,13 +25,6 @@ functions:
     handler: auth/token.auth
   reqAuth:
     handler: auth/websocket.auth
-  validateCode:
-    handler: auth/handler.validate
-    events:
-      - http:
-          path: api/validateCode
-          method: post
-          cors: true
   #SIGN UP FOR EMAIL
   signup:
     handler: signup/handler.signup
@@ -48,7 +41,6 @@ functions:
           path: api/register
           method: post
           cors: true
-          authorizer: auth #TODO: Remove in prod, but prevent registration from happening
   login:
     handler: auth/handler.login
     events:

@@ -1,7 +1,6 @@
 const { connect } = require('../database/db')
 const { register } = require('./register')
 const { login } = require('./login')
-const { validate } = require('./validateCode')
 
 const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -15,28 +14,6 @@ module.exports.register = async (event, context) => {
         const client = await connect()
 
         const session = await register(JSON.parse(event.body), client)
-
-        return {
-            statusCode: session.statusCode || 200,
-            headers,
-            body: JSON.stringify(session.body)
-        }
-    } catch (e) {
-        return {
-            status: e.statusCode || 500,
-            headers: { 'Content-Type': 'text/plain', ...headers },
-            body: e.message
-        }
-    }
-}
-
-module.exports.validate = async (event, context) => {
-    context.callbackWaitsForEmptyEventLoop = false
-
-    try {
-        const client = await connect()
-
-        const session = await validate(JSON.parse(event.body), client)
 
         return {
             statusCode: session.statusCode || 200,

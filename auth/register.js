@@ -1,7 +1,7 @@
 const bcrypt = require('bcryptjs-then')
 const { signToken } = require("./token")
 
-const verifyUser = (user) => {
+const verifyUser = async (user, client) => {
     const expr = {
         USER: /[a-zA-Z0-9]{3,}/,
         PASS: /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9]{8,}$/,
@@ -38,6 +38,34 @@ const verifyUser = (user) => {
                 error: "The email is invalid (Please check if your spelling is correct and it follows the pattern something@something.something. If you believe this is an error, please contact us)"
             }
         }
+    } else {
+        const query = await client.query(`SELECT * FROM signup WHERE "mail" = $1`, [user.email])
+        if (query.rowCount !== 1) {
+            return {
+                statusCode: 400,
+                body: {
+                    auth: false,
+                    error: "The email is not on the signup list. Please signup for the beta to access the app."
+                }
+            }
+        }
+    }
+    return {
+        statusCode: 200
+    }
+}
+
+const verifyCode = async (code, client) => {
+    const query = await client.query(`DELETE FROM registrationcodes WHERE "code" = $1`, [code])
+
+    if (query.rowCount !== 1) {
+        return {
+            statusCode: 400,
+            body: {
+                auth: false,
+                error: "This code is invalid."
+            }
+        }
     }
     return {
         statusCode: 200
@@ -46,15 +74,20 @@ const verifyUser = (user) => {
 
 const register = async (body, client) => {
     try {
-        const verified = verifyUser(body)
+        const verified = await verifyUser(body, client)
         if (verified.statusCode === 400) {
             return verified
+        }
+
+        const vcode = await verifyCode(body.code, client)
+        if (vcode.statusCode === 400) {
+            return vcode
         }
 
         const saltRounds = 10
         const hash = await bcrypt.hash(body.pass, saltRounds)
 
-        await client.query(`INSERT INTO users VALUES($1, $2, $3, $4)`, [body.username, body.email, body.name, hash])
+        await client.query(`INSERT INTO users VALUES($1, $2, $3, $4, $5)`, [body.username, body.email, body.name, hash, 3])
 
         client.release()
 
