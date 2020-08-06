@@ -8,7 +8,10 @@ const comparePass = async (bodyPass, userPass, userID, mini) => {
 
 const login = async (body, client) => {
     try {
-        const {rows} = await client.query(`SELECT * FROM users WHERE username = $1`, [body.username])
+        const { rows } = body.username.includes("@") ?
+            await client.query(`SELECT * FROM users WHERE email = $1`, [body.username]) : //Email
+            await client.query(`SELECT * FROM users WHERE username = $1`, [body.username]) //Username
+
         client.release()
 
         if (rows.length !== 1) {
