@@ -3,8 +3,8 @@ const { signToken } = require("./token")
 
 const verifyUser = async (user, client) => {
     const expr = {
-        USER: /[a-zA-Z0-9]{3,}/,
-        PASS: /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9]{8,}$/,
+        USER: /[a-zA-Z0-9._]{3,}/,
+        PASS: /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])[ -~]{8,}$/,
         MAIL: /^\S+@\S+\.\S+$/,
         NAME: /[a-zA-Z0-9 .]/,
     }
@@ -15,7 +15,7 @@ const verifyUser = async (user, client) => {
             statusCode: 400,
             body: {
                 auth: false,
-                error: "The username is invalid (It needs to be at least 3 characters long and contain only letters and numbers)"
+                error: "The username is invalid (It needs to be at least 3 characters long and contain only letters, numbers, dots and underscores)"
             }
         }
     }
@@ -45,11 +45,41 @@ const verifyUser = async (user, client) => {
                 statusCode: 400,
                 body: {
                     auth: false,
+                    code: "ES",
                     error: "The email is not on the signup list. Please signup for the beta to access the app."
                 }
             }
         }
     }
+
+    const query = await client.query(`SELECT * FROM users WHERE "email" = $1 OR "username" = $2`, [user.email, user.username])
+    if (query.rowCount !== 0) {
+        const {rows} = query
+        let errorCode
+        if (rows.length === 1) {
+            if (rows[0].username === user.username) {
+                if (rows[0].email === user.email) {
+                    errorCode = "UE"
+                } else {
+                    errorCode = "U"
+                }
+            } else {
+                errorCode = "E"
+            }
+        } else {
+            errorCode = "UE"
+        }
+
+        return {
+            statusCode: 400,
+            body: {
+                auth: false,
+                code: errorCode,
+                error: `The ${errorCode === "UE" ? "username and email" : (errorCode === "U" ? "username" : "email")} already exists.`
+            }
+        }
+    }
+
     return {
         statusCode: 200
     }
@@ -63,6 +93,7 @@ const verifyCode = async (code, client) => {
             statusCode: 400,
             body: {
                 auth: false,
+                code: "C",
                 error: "This code is invalid."
             }
         }
@@ -100,7 +131,7 @@ const register = async (body, client) => {
         }
     } catch (e) {
         return {
-            statusCode: e.statusCode || 500,
+            statusCode: e.status || 500,
             body: {
                 auth: false,
                 error: e.message
