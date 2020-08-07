@@ -23,8 +23,8 @@ module.exports.register = async (event, context) => {
     } catch (e) {
         return {
             status: e.statusCode || 500,
-            headers: { 'Content-Type': 'text/plain', ...headers },
-            body: e.message
+            headers,
+            body: JSON.stringify(e.body)
         }
     }
 }
