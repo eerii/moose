@@ -1,9 +1,9 @@
 const bcrypt = require('bcryptjs-then')
 const { signToken, signMiniToken } = require("./token")
 
-const comparePass = async (bodyPass, userPass, userID, mini) => {
+const comparePass = async (bodyPass, userPass, userID, mini, name, tokens) => {
     const valid = await bcrypt.compare(bodyPass, userPass)
-    return valid ? (mini ? signMiniToken(userID) : signToken(userID)) : "Unauthorized"
+    return valid ? (mini ? signMiniToken(userID) : signToken(userID, name, tokens)) : "Unauthorized"
 }
 
 const login = async (body, client) => {
@@ -24,7 +24,7 @@ const login = async (body, client) => {
 
         const user = rows[0]
 
-        const token = await comparePass(body.pass, user.pass, user.username, body.mini || false)
+        const token = await comparePass(body.pass, user.pass, user.username, body.mini || false, user.name, user.tokens)
 
         if (token === "Unauthorized") {
             return {

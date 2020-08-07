@@ -118,7 +118,9 @@ const register = async (body, client) => {
         const saltRounds = 10
         const hash = await bcrypt.hash(body.pass, saltRounds)
 
-        await client.query(`INSERT INTO users VALUES($1, $2, $3, $4, $5)`, [body.username.toLowerCase(), body.email.toLowerCase(), body.name, hash, 3])
+        const tokens = 3
+
+        await client.query(`INSERT INTO users VALUES($1, $2, $3, $4, $5)`, [body.username.toLowerCase(), body.email.toLowerCase(), body.name, hash, tokens])
 
         client.release()
 
@@ -126,7 +128,7 @@ const register = async (body, client) => {
             statusCode: 200,
             body: {
                 auth: true,
-                token: signToken(body.username.toLowerCase()) //Not null because of query
+                token: signToken(body.username.toLowerCase(), body.name, tokens) //Not null because of query
             }
         }
     } catch (e) {

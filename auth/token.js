@@ -1,9 +1,9 @@
 const jwt = require('jsonwebtoken')
 const { generatePolicy } = require("./policy")
 
-const signToken = (username) => {
+const signToken = (username, name=null, tokens=null) => {
     return jwt.sign(
-        { username },
+        { username, name, tokens },
         process.env.SECRET, {
             expiresIn: 86400 //24h
         }
