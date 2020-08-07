@@ -14,7 +14,6 @@ module.exports.sendMessage = async (event, context) => {
             await client.query(`DELETE FROM connections WHERE "connectionID" = $1`, [body.sender])
         }
 
-
         if (body.type === "start-time") {
             const localTime = await Math.round(Date.now() / 1000)
 

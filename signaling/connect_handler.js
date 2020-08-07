@@ -7,11 +7,14 @@ module.exports.connect = async (event, context) => {
 
     if (event.requestContext.authorizer) {
         const username = event.requestContext.authorizer.principalId
+
+        const name = event.requestContext.authorizer.name
+
         const time = event.requestContext.connectedAt
 
         try {
             const client = await connect()
-            await client.query(`INSERT INTO connections VALUES($1, $2, $3)`, [connectionID, username, time])
+            await client.query(`INSERT INTO connections VALUES($1, $2, $3, $4)`, [connectionID, username, time, name])
             client.release()
         } catch (e) {
             console.log(e)

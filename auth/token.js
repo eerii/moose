@@ -53,9 +53,7 @@ const auth = async (event) => {
     try {
         const decoded = await jwt.verify(token, process.env.SECRET)
 
-        const policy = await generatePolicy(decoded.username, 'Allow', event.methodArn)
-
-        return policy
+        return await generatePolicy(decoded.username, 'Allow', event.methodArn, decoded.name)
     } catch (e) {
         return {
             statusCode: 401,
