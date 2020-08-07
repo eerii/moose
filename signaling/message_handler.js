@@ -32,9 +32,12 @@ module.exports.sendMessage = async (event, context) => {
 
             const difference = (localTime - 600) - previous //10 Minutes
 
-            if (Math.abs(difference) < 120) { //2 Minutes margin
+            if (Math.abs(difference) < 60) { //1 Minute margin
                 await client.query(`UPDATE timetracking SET "previous" = $1, "token" = $2 WHERE previous = (SELECT MAX(previous) FROM timetracking WHERE "userA" = $3)`, [localTime, token + 1, body.sender])
-                await client.query(`UPDATE users SET "tokens" = "tokens" - 1 WHERE "username" = $1`, [body.sender])
+
+                await client.query(`UPDATE users SET "tokens" = "tokens" + 1 WHERE "username" = $1`, [body.sender])
+                await client.query(`UPDATE users SET "tokens" = "tokens" - 1 WHERE "username" = $1`, [body.data])
+
                 body.data = `OK: ADDED TIME WITH DIFERENCE ${difference}s AND USED ${token + 1} TIME TOKENS`
             } else {
                 body.data = "ERROR: DIFFERENCE IN TIMES " + difference + "s" + ` LocalTime ${localTime} PreviousTime ${previous}`
