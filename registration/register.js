@@ -1,5 +1,5 @@
 const bcrypt = require('bcryptjs-then')
-const { signToken } = require("./token")
+const { signToken } = require("../auth/token")
 
 const verifyUser = async (user, client) => {
     const expr = {
@@ -120,7 +120,7 @@ const register = async (body, client) => {
 
         const tokens = 3
 
-        await client.query(`INSERT INTO users VALUES($1, $2, $3, $4, $5)`, [body.username.toLowerCase(), body.email.toLowerCase(), body.name, hash, tokens])
+        await client.query(`INSERT INTO users VALUES($1, $2, $3, $4, $5, $6)`, [body.username.toLowerCase(), body.email.toLowerCase(), body.name, hash, tokens, 0])
 
         client.release()
 
@@ -128,7 +128,7 @@ const register = async (body, client) => {
             statusCode: 200,
             body: {
                 auth: true,
-                token: signToken(body.username.toLowerCase(), body.name, tokens) //Not null because of query
+                token: signToken(body.username.toLowerCase(), body.name, tokens, 0) //Not null because of query
             }
         }
     } catch (e) {

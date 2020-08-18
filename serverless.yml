@@ -35,12 +35,20 @@ functions:
           cors: true
   #USER MANAGEMENT
   register:
-    handler: auth/handler.register
+    handler: registration/handler.register
     events:
       - http:
           path: api/register
           method: post
           cors: true
+  modifyUser:
+    handler: registration/handler.modifyUser
+    events:
+      - http:
+          path: api/modifyUser
+          method: post
+          cors: true
+          authorizer: auth
   login:
     handler: auth/handler.login
     events:
