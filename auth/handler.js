@@ -52,20 +52,27 @@ module.exports.me = async (event, context) => {
 
 const me = async (userID, client) => {
     try {
-        const exists = await client.query(`SELECT EXISTS(SELECT 1 FROM users WHERE username = $1)`, [userID])
+        const { rows } = await client.query(`SELECT "tokens", "need", "offer", "birthdate", "funfact", "bio", "country" FROM users WHERE username = $1`, [userID])
         client.release()
 
-        if (exists) {
-            return {
-                exists: true,
-                username: userID
-            }
-        } else {
+        if (rows.length !== 1) {
             return {
                 statusCode: 400,
                 exists: false,
                 error: "No user found."
             }
+        }
+
+        const user = rows[0]
+
+        return {
+            exists: true,
+            need: user.need,
+            offer: user.offer,
+            birthdate: user.birthdate,
+            funfact: user.funfact,
+            bio: user.bio,
+            country: user.country
         }
     } catch (e) {
         return {
