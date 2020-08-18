@@ -1,16 +1,16 @@
 const bcrypt = require('bcryptjs-then')
 const { signToken, signMiniToken } = require("./token")
 
-const comparePass = async (bodyPass, userPass, userID, mini, name, tokens, status) => {
+const comparePass = async (bodyPass, userPass, userID, mini, name, status) => {
     const valid = await bcrypt.compare(bodyPass, userPass)
-    return valid ? (mini ? signMiniToken(userID) : signToken(userID, name, tokens, status)) : "Unauthorized"
+    return valid ? (mini ? signMiniToken(userID) : signToken(userID, name, status)) : "Unauthorized"
 }
 
 const login = async (body, client) => {
     try {
         const { rows } = body.username.includes("@") ?
-            await client.query(`SELECT * FROM users WHERE email = $1`, [body.username.toLowerCase()]) : //Email
-            await client.query(`SELECT * FROM users WHERE username = $1`, [body.username.toLowerCase()]) //Username
+            await client.query(`SELECT "username", "name", "pass", "status" FROM users WHERE email = $1`, [body.username.toLowerCase()]) : //Email
+            await client.query(`SELECT "username", "name", "pass", "status" FROM users WHERE username = $1`, [body.username.toLowerCase()]) //Username
 
         client.release()
 
@@ -24,7 +24,7 @@ const login = async (body, client) => {
 
         const user = rows[0]
 
-        const token = await comparePass(body.pass, user.pass, user.username, body.mini || false, user.name, user.tokens, user.status)
+        const token = await comparePass(body.pass, user.pass, user.username, body.mini || false, user.name, user.status)
 
         if (token === "Unauthorized") {
             return {

@@ -18,20 +18,35 @@ const modifyUser = async (body, user, name, client) => {
 
     const updateArr = [body.need, body.offer, body.birthdate, body.funfact, body.bio, body.country, body.status].filter((x) => x !== undefined)
 
-    console.log(updateStr, updateArr)
-
     try {
         const query = await client.query(`UPDATE users SET ${updateStr} WHERE "username" = $1`, [user, ...updateArr])
-
-        console.log(query.rowCount)
-
         client.release()
+
+        if (query.rowCount !== 1) {
+            return {
+                statusCode: 400,
+                body: {
+                    auth: false,
+                    error: "The user does not exist"
+                }
+            }
+        }
+
+        if (body.status !== undefined) {
+            const token = signToken(user, name, body.status)
+            return {
+                statusCode: 200,
+                body: {
+                    auth: true,
+                    token
+                }
+            }
+        }
 
         return {
             statusCode: 200,
             body: {
                 auth: true,
-                token: signToken(user, name, 3, 1)
             }
         }
     } catch (e) {
