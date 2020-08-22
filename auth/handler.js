@@ -67,6 +67,7 @@ const me = async (userID, client) => {
 
         return {
             exists: true,
+            tokens: user.tokens,
             need: user.need,
             offer: user.offer,
             birthdate: user.birthdate,
