@@ -61,18 +61,21 @@ module.exports.verifyUser = async (event, context) => {
     try {
         const client = await connect()
 
-        const session = await verifyUser(JSON.parse(event.body), event.requestContext.authorizer.principalId, client)
+        const username = event.requestContext.authorizer.principalId
+        const name = event.requestContext.authorizer.name
+
+        const session = await verifyUser(JSON.parse(event.body), username, name, client)
 
         return {
             statusCode: session.statusCode || 200,
             headers,
-            body: JSON.stringify(session.verify)
+            body: JSON.stringify(session.body)
         }
     } catch (e) {
         return {
             status: e.statusCode || 500,
             headers,
-            body: JSON.stringify(session.verify)
+            body: JSON.stringify(e.body)
         }
     }
 }
