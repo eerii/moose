@@ -41,6 +41,14 @@ functions:
           path: api/register
           method: post
           cors: true
+  verifyUser:
+    handler: registration/handler.verifyUser
+    events:
+      - http:
+          path: api/verifyUser
+          method: post
+          cors: true
+          authorizer: auth
   modifyUser:
     handler: registration/handler.modifyUser
     events:

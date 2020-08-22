@@ -1,6 +1,7 @@
 const { connect } = require('../database/db')
 const { register } = require('./register')
 const { modifyUser } = require('./modifyUser')
+const { verifyUser } = require('./verifyUser')
 
 const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -50,6 +51,28 @@ module.exports.modifyUser = async (event, context) => {
             status: e.statusCode || 500,
             headers,
             body: JSON.stringify(e.body)
+        }
+    }
+}
+
+module.exports.verifyUser = async (event, context) => {
+    context.callbackWaitsForEmptyEventLoop = false
+
+    try {
+        const client = await connect()
+
+        const session = await verifyUser(JSON.parse(event.body), event.requestContext.authorizer.principalId, client)
+
+        return {
+            statusCode: session.statusCode || 200,
+            headers,
+            body: JSON.stringify(session.verify)
+        }
+    } catch (e) {
+        return {
+            status: e.statusCode || 500,
+            headers,
+            body: JSON.stringify(session.verify)
         }
     }
 }

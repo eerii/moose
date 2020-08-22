@@ -1,5 +1,7 @@
 const bcrypt = require('bcryptjs-then')
+const crypto = require('crypto')
 const { signToken } = require("../auth/token")
+const { registrationEmail } = require("./registrationEmail")
 
 const verifyUser = async (user, client) => {
     const expr = {
@@ -121,9 +123,22 @@ const register = async (body, client) => {
         const tokens = 3
         const status = 0
 
-        await client.query(`INSERT INTO users VALUES($1, $2, $3, $4, $5, $6)`, [body.username.toLowerCase(), body.email.toLowerCase(), body.name, hash, tokens, status])
+        const tempHash = await crypto.randomBytes(64).toString('hex')
+
+        await client.query(`INSERT INTO users("username", "email", "name", "pass", "tokens", "status", "tempHash") VALUES($1, $2, $3, $4, $5, $6, $7)`, [body.username.toLowerCase(), body.email.toLowerCase(), body.name, hash, tokens, status, tempHash])
 
         client.release()
+
+        const send = await registrationEmail(body.email.toLowerCase(), tempHash)
+        if (send !== true) {
+            return {
+                statusCode: send.status || 500,
+                body: {
+                    auth: false,
+                    error: send.message
+                }
+            }
+        }
 
         return {
             statusCode: 200,
