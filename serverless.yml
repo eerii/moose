@@ -72,6 +72,15 @@ functions:
           method: get
           cors: true
           authorizer: auth
+  #SEARCH
+  searchUsers:
+    handler: userlist/handler.search
+    events:
+      - http:
+          path: api/searchUsers
+          method: post
+          cors: true
+          authorizer: auth
   #SIGNALING
   signalConnect:
     handler: signaling/connect_handler.connect
