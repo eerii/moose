@@ -81,6 +81,14 @@ functions:
           method: post
           cors: true
           authorizer: auth
+  discover:
+    handler: userlist/handler.discover
+    events:
+      - http:
+          path: api/discover
+          method: get
+          cors: true
+          authorizer: auth
   #SIGNALING
   signalConnect:
     handler: signaling/connect_handler.connect

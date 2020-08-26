@@ -1,4 +1,6 @@
 const { connect } = require('../database/db')
+const { search } = require('./search')
+const { discover } = require('./discover')
 
 const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -27,46 +29,26 @@ module.exports.search = async (event, context) => {
     }
 }
 
-const search = async (body, client) => {
+module.exports.discover = async (event, context) => {
+    context.callbackWaitsForEmptyEventLoop = false
+
     try {
-        //WHERE
-        let queryArr = ["offer IS NOT NULL", "", ""]
-        /*if (body.search) {
-            queryArr[0] = `(username SIMILAR TO '${body.search}%' OR name SIMILAR TO '${body.search}%')`
-        }*/
-        if (body.categories) {
-            const str = body.categories.map((c) => `offer SIMILAR TO '%"${c}"%'`)
-            queryArr[1] = str.join(" AND ")
-        }
-        if (body.language) {
-            const str = body.language.map((l) => `(language SIMILAR TO '${l}' OR "otherLanguages" SIMILAR TO '%"${l}"%')`)
-            queryArr[2] = `(${str.join(" OR ")})`
-        }
-        const whereStr = `WHERE ${queryArr.filter(q => q !== "").join(" AND ")}`
+        const client = await connect()
 
-        //ORDER BY
-        const weights = [2, 2, 1] //Starts with, Username Similarity, Name Similarity
-        let orderStr = "ORDER BY "
-        if (body.search) {
-            orderStr += `(username SIMILAR TO '${body.search}%' OR LOWER(UNACCENT(name)) SIMILAR TO '${body.search}%')::int * ${weights[0]} + SIMILARITY(username,'${body.search}') * ${weights[1]} + SIMILARITY(name,'${body.search}') * ${weights[2]} DESC, `
-        }
-        orderStr += `LENGTH(username) ASC, username ASC, LENGTH(offer) DESC NULLS LAST`
+        const username = event.requestContext.authorizer.principalId
 
-        //QUERY
-        const queryStr = `SELECT username, name, offer, language, "otherLanguages" FROM users ${whereStr} ${orderStr} LIMIT ${body.limit || 20}`
-        console.log(queryStr)
-
-
-        const { rows } = await client.query(queryStr)
-        client.release()
+        const session = await discover(JSON.parse(event.body), username, client)
 
         return {
-            rows: rows
+            statusCode: session.statusCode || 200,
+            headers,
+            body: JSON.stringify(session)
         }
     } catch (e) {
         return {
-            statusCode: 500,
-            error: e.message
+            status: e.statusCode || 500,
+            headers: { 'Content-Type': 'text/plain', ...headers },
+            body: e.message
         }
     }
 }
