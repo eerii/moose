@@ -16,7 +16,7 @@ const discover = async (body, username, client) => {
         const numberPerCategory = 10
 
         const query = `SELECT rank_score.* FROM
-             (SELECT users.username, users.offer,
+             (SELECT users.username, users.offer, users.name, users.language, users.otherlanguages, users.funfact, users.bio,
                 rank() OVER (PARTITION BY
                 CASE
                     ${queryArr.join(" ")}
@@ -30,6 +30,7 @@ const discover = async (body, username, client) => {
         client.release()
 
         return {
+            need: JSON.parse(user.need),
             rows: rows
         }
     } catch (e) {

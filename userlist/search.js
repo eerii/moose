@@ -10,7 +10,7 @@ const search = async (body, client) => {
             queryArr[1] = str.join(" AND ")
         }
         if (body.language) {
-            const str = body.language.map((l) => `(language SIMILAR TO '${l}' OR "otherLanguages" SIMILAR TO '%"${l}"%')`)
+            const str = body.language.map((l) => `(language SIMILAR TO '${l}' OR "otherlanguages" SIMILAR TO '%"${l}"%')`)
             queryArr[2] = `(${str.join(" OR ")})`
         }
         const whereStr = `WHERE ${queryArr.filter(q => q !== "").join(" AND ")}`
@@ -24,7 +24,7 @@ const search = async (body, client) => {
         orderStr += `LENGTH(username) ASC, username ASC, LENGTH(offer) DESC NULLS LAST`
 
         //QUERY
-        const queryStr = `SELECT username, name, offer, language, "otherLanguages" FROM users ${whereStr} ${orderStr} LIMIT ${body.limit || 20}`
+        const queryStr = `SELECT username, name, offer, language, otherlanguages FROM users ${whereStr} ${orderStr} LIMIT ${body.limit || 20}`
         console.log(queryStr)
 
 

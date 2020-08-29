@@ -15,10 +15,10 @@ const modifyUser = async (body, user, name, client) => {
         body.bio !== undefined ? `"bio"=$${addCount()},` : ""}${
         body.country !== undefined ? `"country"=$${addCount()},` : ""}${
         body.language !== undefined ? `"language"=$${addCount()},` : ""}${
-        body.otherLanguages !== undefined ? `"otherLanguages"=$${addCount()},` : ""}${
+        body.otherlanguages !== undefined ? `"otherlanguages"=$${addCount()},` : ""}${
         body.status !== undefined ? `"status"=$${addCount()},` : ""}`.slice(0, -1)
 
-    const updateArr = [body.need, body.offer, body.birthdate, body.funfact, body.bio, body.country, body.language, body.otherLanguages, body.status].filter((x) => x !== undefined)
+    const updateArr = [body.need, body.offer, body.birthdate, body.funfact, body.bio, body.country, body.language, body.otherlanguages, body.status].filter((x) => x !== undefined)
 
     try {
         const query = await client.query(`UPDATE users SET ${updateStr} WHERE "username" = $1`, [user, ...updateArr])
