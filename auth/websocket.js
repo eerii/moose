@@ -11,7 +11,7 @@ module.exports.auth = async (event, callback) => {
         try {
             const decoded = await jwt.verify(query.Auth, process.env.SECRET)
 
-            return await generatePolicy(decoded.username, 'Allow', event.methodArn, decoded.name)
+            return await generatePolicy(decoded.username, 'Allow', event.methodArn, decoded.name, query.Room)
         } catch (e) {
             return {
                 statusCode: 401,

@@ -1,4 +1,4 @@
-module.exports.generatePolicy = async (principalId, effect, resource, name) => {
+module.exports.generatePolicy = async (principalId, effect, resource, name=null, room=null) => {
     let authResponse = {}
 
     authResponse.principalId = principalId
@@ -18,11 +18,9 @@ module.exports.generatePolicy = async (principalId, effect, resource, name) => {
 
         authResponse.policyDocument = policyDocument
 
-        if (name) {
-            authResponse.context = { "name": name }
-        } else {
-            authResponse.context = { "name": "no name" }
-        }
+        authResponse.context = {}
+        authResponse.context.name = name || "no name"
+        authResponse.context.room = room || null
     }
 
     return authResponse
