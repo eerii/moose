@@ -17,11 +17,16 @@
   },
   "homepage": "https://github.com/josekoalas/moose#readme",
   "devDependencies": {
+    "eslint": "^7.7.0",
+    "eslint-config-airbnb-base": "^14.2.0",
+    "eslint-plugin-import": "^2.22.0",
+    "prettier-eslint": "^11.0.0",
     "serverless-offline": "^6.5.0"
   },
   "dependencies": {
     "aws-sdk": "^2.724.0",
     "bcryptjs-then": "^1.0.1",
+    "crypto": "^1.0.1",
     "jsonwebtoken": "^8.5.1",
     "mailgun-js": "^0.22.0",
     "pg": "^8.3.0"

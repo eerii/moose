@@ -1,5 +1,7 @@
 const bcrypt = require('bcryptjs-then')
-const { signToken } = require("./token")
+const crypto = require('crypto')
+const { signToken } = require("../auth/token")
+const { registrationEmail } = require("./registrationEmail")
 
 const verifyUser = async (user, client) => {
     const expr = {
@@ -52,7 +54,7 @@ const verifyUser = async (user, client) => {
         }
     }
 
-    const query = await client.query(`SELECT * FROM users WHERE "email" = $1 OR "username" = $2`, [user.email, user.username])
+    const query = await client.query(`SELECT "username", "email" FROM users WHERE "email" = $1 OR "username" = $2`, [user.email, user.username])
     if (query.rowCount !== 0) {
         const {rows} = query
         let errorCode
@@ -119,16 +121,30 @@ const register = async (body, client) => {
         const hash = await bcrypt.hash(body.pass, saltRounds)
 
         const tokens = 3
+        const status = 0
 
-        await client.query(`INSERT INTO users VALUES($1, $2, $3, $4, $5)`, [body.username.toLowerCase(), body.email.toLowerCase(), body.name, hash, tokens])
+        const tempHash = await crypto.randomBytes(64).toString('hex')
+
+        await client.query(`INSERT INTO users("username", "email", "name", "pass", "tokens", "status", "tempHash") VALUES($1, $2, $3, $4, $5, $6, $7)`, [body.username.toLowerCase(), body.email.toLowerCase(), body.name, hash, tokens, status, tempHash])
 
         client.release()
+
+        const send = await registrationEmail(body.email.toLowerCase(), tempHash)
+        if (send !== true) {
+            return {
+                statusCode: send.status || 500,
+                body: {
+                    auth: false,
+                    error: send.message
+                }
+            }
+        }
 
         return {
             statusCode: 200,
             body: {
                 auth: true,
-                token: signToken(body.username.toLowerCase(), body.name, tokens) //Not null because of query
+                token: signToken(body.username.toLowerCase(), body.name, 0) //Not null because of query
             }
         }
     } catch (e) {
