@@ -39,6 +39,7 @@ module.exports.sendMessage = async (event, context) => {
     let body = JSON.parse(event.body)
 
     let connectionData
+    let roomData
     try {
         const client = await connect()
 
@@ -53,11 +54,14 @@ module.exports.sendMessage = async (event, context) => {
             await client.query(`SELECT * FROM connections`) :
             await client.query(`SELECT "connectionID" FROM connections`)
 
-        client.release()
-
         if (!connectionData) {
             return { statusCode: 400, body: "No connection data." }
         }
+
+        roomData = (body.type === "getID") ?
+            await client.query(`SELECT master, users, oncall FROM rooms WHERE room=$1`, [connectionData.rows[0].room]) : null
+
+        client.release()
     } catch (e) {
         return { statusCode: 500, body: e.stack }
     }
@@ -74,7 +78,7 @@ module.exports.sendMessage = async (event, context) => {
         target: body.target,
         date: body.date,
         userlist: (body.type === "getID") ? connectionData.rows : null,
-        videoAvailable: (body.type === "getID") ? false : null
+        room: (body.type === "getID") ? roomData.rows[0] : null
     }
 
     const calls = connectionData.rows.map(async ({ connectionID }) => {

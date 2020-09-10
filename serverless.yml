@@ -8,8 +8,8 @@ provider:
   stage: dev
   region: eu-central-1
   #logs:
-    #websocket: true
-    #restApi: true
+  #websocket: true
+  #restApi: true
   environment:
     DB: ${file(env.yml):${self:provider.stage}.DB}
     DB_PORT: ${file(env.yml):${self:provider.stage}.DB_PORT}
@@ -17,6 +17,8 @@ provider:
     DB_PASS: ${file(env.yml):${self:provider.stage}.DB_PASS}
     DB_NAME: ${file(env.yml):${self:provider.stage}.DB_NAME}
     MAIL: ${file(env.yml):${self:provider.stage}.MAIL}
+    MAILDB_USER: ${file(env.yml):${self:provider.stage}.MAILDB_USER}
+    MAILDB_PASS: ${file(env.yml):${self:provider.stage}.MAILDB_PASS}
     SECRET: ${file(env.yml):${self:provider.stage}.SECRET}
 
 functions:
@@ -109,6 +111,44 @@ functions:
     events:
       - websocket:
           route: sendMessage
+#EMAIL
+getMails:
+  handler: mail/handler.getMails
+  events:
+    - http:
+      path: api/mail/{user}
+      method: get
+      cors: true
+      authorizer: auth
+      request:
+        parameters:
+          paths:
+            user: true
+getMail:
+  handler: mail/handler.getMail
+  events:
+    - http:
+      path: api/mail/{user}/{id}
+      method: get
+      cors: true
+      authorizer: auth
+      request:
+        parameters:
+          paths:
+            user: true
+            id: true
+postMail:
+  handler: mail/handler.postMail
+  events:
+    - http:
+      path: api/mail/{user}/{id}
+      method: post
+      cors: true
+      request:
+        parameters:
+          paths:
+            user: true
+            id: true
 
 plugins:
   - serverless-offline
@@ -138,7 +178,6 @@ resources:
         RestApiId:
           Ref: 'ApiGatewayRestApi'
         StatusCode: '401'
-
 #custom:
 #  customDomain:
 #    domainName: api.moosehour.com
